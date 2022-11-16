@@ -1,0 +1,149 @@
+<?XML VERSION="1.0" ENCODING="UTF-8"?><sqlb_project><db PATH="G:/Datasets/chinook_db/chinook.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"></db><attached></attached><WINDOW><main_tabs OPEN="structure browser pragmas query" CURRENT="3"></main_tabs></WINDOW><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="3954"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"></expanded_item><expanded_item id="1" parent="1"></expanded_item><expanded_item id="2" parent="1"></expanded_item><expanded_item id="3" parent="1"></expanded_item></tab_structure><tab_browse><current_table name="4,5:mainAlbum"></current_table><default_encoding codec=""></default_encoding><browse_table_settings/></tab_browse><tab_sql><SQL name="SQL 1">#countries have the most Invoices
+SELECT BillingCountry,
+       count(InvoiceId) AS Invoices
+FROM Invoice
+GROUP BY BillingCountry
+ORDER BY Invoices DESC #city has the best customers
+SELECT city,
+       sum(Invoice.total) AS Total_Invoices
+FROM Customer
+JOIN Invoice ON Customer.CustomerId = Invoice.CustomerId
+GROUP BY City
+ORDER BY Total_Invoices DESC
+LIMIT 5 #the best customer
+SELECT Customer.CustomerId,
+       FirstName,
+       LastName,
+       sum(Invoice.total) AS Total_purchases
+FROM Customer
+JOIN Invoice ON Customer.CustomerId = Invoice.CustomerId
+GROUP BY FirstName,
+         LastName
+ORDER BY Total_purchases DESC
+LIMIT 1 #Email belong TO Rock music listeners
+SELECT DISTINCT(Email),
+       FirstName,
+       LastName,
+       Genre.Name AS MusicName
+FROM Invoice
+JOIN Customer ON Invoice.CustomerId = Customer.CustomerId
+JOIN InvoiceLine ON Invoice.InvoiceId = InvoiceLine.InvoiceId
+JOIN track ON InvoiceLine.TrackId = Track.TrackId
+JOIN Genre ON Track.GenreId = Genre.GenreId
+WHERE MusicName = "
+
+Rock"
+
+
+ORDER BY Email #top 10 rock bands
+SELECT Album.ArtistId,
+       Artist.Name,
+       count(Genre.GenreId) AS songs
+FROM Artist
+JOIN Album ON Album.ArtistId = Artist.ArtistId
+JOIN Track ON Album.AlbumId = Track.AlbumId
+JOIN Genre ON Genre.GenreId = Track.GenreId
+GROUP BY Artist.Name
+ORDER BY songs DESC
+LIMIT 10 #The top artists according TO invoice amounts
+SELECT Artist.Name,
+       sum(InvoiceLine.UnitPrice*InvoiceLine.Quantity) AS MostPaid
+FROM Artist
+JOIN Album ON Artist.ArtistId = Album.ArtistId
+JOIN Track ON Album.AlbumId = Track.AlbumId
+JOIN InvoiceLine ON Track.TrackId = InvoiceLine.TrackId
+GROUP BY Artist.Name
+ORDER BY MostPaid DESC
+LIMIT 5 #Customers that most paid
+FOR artist
+SELECT distinct(Artist.Name),
+       sum(Invoice.Total) AS AmountSpent,
+       Customer.CustomerId,
+       Customer.FirstName,
+       Customer.LastName
+FROM Artist
+JOIN Album ON Artist.ArtistId = Album.ArtistId
+JOIN Track ON Album.AlbumId = Track.AlbumId
+JOIN InvoiceLine ON Track.TrackId = InvoiceLine.TrackId
+JOIN Invoice ON InvoiceLine.InvoiceId = Invoice.InvoiceId
+JOIN Customer ON Invoice.CustomerId = Customer.CustomerId
+GROUP BY 1,
+         3,
+         4,
+         5
+ORDER BY 2 DESC
+LIMIT 7 #the most popular music (Genre)
+FOR EACH country
+AND purchase WITH Q1 AS
+  (SELECT Invoice.BillingCountry AS Country,
+          Genre.Name AS Name,
+          count(Track.TrackId*Track.UnitPrice) AS Purchase,
+          Genre.GenreId AS ID
+   FROM Customer
+   JOIN Invoice ON Customer.CustomerId = Invoice.CustomerId
+   JOIN InvoiceLine ON Invoice.InvoiceId = InvoiceLine.InvoiceId
+   JOIN Track ON InvoiceLine.TrackId = Track.TrackId
+   JOIN Genre ON Track.GenreId = Genre.GenreId
+   GROUP BY 1,
+            2
+   ORDER BY 3 DESC)
+SELECT Q2.Purchases,
+       Q2.Country,
+       Q1.Name,
+       Q1.ID
+FROM
+  (SELECT max(Purchase) AS Purchases,
+          Country,
+          Name,
+          ID
+   FROM Q1
+   GROUP BY 2
+   ORDER BY 2) AS Q2
+JOIN Q1 ON Q1.Purchase = Q2.Purchases
+AND Q1.Country=Q2.Country #songs that his longest larger THAN the average
+SELECT Track.Name,
+       Track.Milliseconds
+FROM track
+WHERE Track.Milliseconds >
+
+
+  (SELECT avg(Track.Milliseconds)
+   FROM Track)
+ORDER BY Track.Milliseconds DESC #customer that has spent the most ON music
+FOR EACH country WITH Q1 AS
+  (SELECT Customer.CustomerId,
+          Customer.FirstName,
+          Customer.LastName,
+          Customer.Country,
+          sum(Invoice.Total) AS TotalSpent
+   FROM Customer
+   JOIN Invoice ON Customer.CustomerId = Invoice.CustomerId
+   GROUP BY 1,
+            2,
+            3,
+            4
+   ORDER BY 5)
+SELECT Q2.Country,
+       Q2.TotalSpent,
+       Q1.FirstName,
+       Q1.LastName,
+       Q1.CustomerId
+FROM
+  (SELECT Country,
+          max(TotalSpent) AS TotalSpent,
+          FirstName,
+          LastName,
+          CustomerId
+   FROM Q1
+   GROUP BY 1
+   ORDER BY 2 DESC) AS Q2
+JOIN Q1 ON Q1.TotalSpent = Q2.TotalSpent
+AND Q1.Country=Q2.Country #PlusQuery #Numberofsongs
+SELECT Artist.Name,
+       count(Track.TrackId) AS NumberOfSongs
+FROM Artist
+JOIN Album ON Artist.ArtistId = Album.ArtistId
+JOIN Track ON Album.AlbumId = Track.AlbumId
+GROUP BY Artist.Name
+ORDER BY NumberOfSongs DESC
+LIMIT 5</SQL><current_tab id="0"></current_tab></tab_sql></sqlb_project>
